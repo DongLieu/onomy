@@ -57,7 +57,7 @@ func CmdShowParams() *cobra.Command {
 func CmdCheckStablecoin() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "stablecoin [denom]",
-		Short: "shows info price, fee in, fee out of the stablecoin",
+		Short: "shows info price, fee in, fee out, swapable quantity of the stablecoin",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
