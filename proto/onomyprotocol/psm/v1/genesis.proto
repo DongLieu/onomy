@@ -1,0 +1,14 @@
+syntax = "proto3";
+package onomyprotocol.psm.v1;
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "onomyprotocol/psm/v1/params.proto";
+
+option go_package = "github.com/onomyprotocol/onomy/x/psm/types";
+
+// GenesisState defines the psm module's genesis state.
+message GenesisState {
+  // the psm module managed params
+  Params params = 1 [(gogoproto.nullable) = false];
+}

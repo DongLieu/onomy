@@ -1,0 +1,32 @@
+syntax = "proto3";
+package onomyprotocol.psm.v1;
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/duration.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "onomyprotocol/psm/v1/psm.proto";
+
+option go_package = "github.com/onomyprotocol/onomy/x/psm/types";
+
+// Msg defines the Msg service.
+service Msg {
+  rpc SwapToIST(MsgSwapToIST) returns (MsgSwapToISTResponse);
+  rpc SwapToStablecoin(MsgSwapToStablecoin) returns (MsgSwapToStablecoinResponse);
+}
+
+message MsgSwapToIST {
+    string address = 1;
+    cosmos.base.v1beta1.Coin coin = 2;
+}
+message MsgSwapToISTResponse {}
+
+message MsgSwapToStablecoin {
+    string address = 1;
+    string to_denom = 2;
+    bytes amount = 3 [
+    (gogoproto.moretags) = "yaml:\"pool_rate\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+message MsgSwapToStablecoinResponse {}

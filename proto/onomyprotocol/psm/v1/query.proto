@@ -1,0 +1,47 @@
+syntax = "proto3";
+package onomyprotocol.psm.v1;
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "google/api/annotations.proto";
+import "onomyprotocol/psm/v1/params.proto";
+import "onomyprotocol/psm/v1/psm.proto";
+
+option go_package = "github.com/onomyprotocol/onomy/x/psm/types";
+option (gogoproto.goproto_stringer_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+
+service Query {
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/onomyprotocol/psm/v1/params";
+  }
+
+  rpc Stablecoin(QueryStablecoinRequest) return (QueryStablecoinResponse) {
+    option (google.api.http).get = "/onomyprotocol/psm/v1/psm";
+  }
+}
+
+message QueryParamsRequest {}
+
+message QueryParamsResponse {
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+
+message QueryStablecoinRequest {
+  string denom = 1;
+}
+
+message QueryStablecoinResponse {
+  Stablecoin stablecoin = 1 [(gogoproto.nullable) = false];
+  bytes current_total = 2 [
+    (gogoproto.moretags) = "yaml:\"pool_rate\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  bytes swapable_quantity = 3 [
+    (gogoproto.moretags) = "yaml:\"pool_rate\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}

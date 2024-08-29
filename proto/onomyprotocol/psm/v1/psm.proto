@@ -1,0 +1,32 @@
+syntax = "proto3";
+package onomyprotocol.psm.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/onomyprotocol/onomy/x/psm/types";
+
+message Stablecoin {
+    string denom = 1;
+    // limit total stablecoin module support
+    bytes limit_total = 2 [
+    (gogoproto.moretags) = "yaml:\"pool_rate\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+   // price is the amount of stablecoin to exchange for 1 unit of nomUSD (very close to 1)
+    bytes price = 3 [
+    (gogoproto.moretags) = "yaml:\"pool_rate\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+      bytes fee_in = 4 [
+    (gogoproto.moretags) = "yaml:\"pool_rate\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+      bytes fee_out = 5 [
+    (gogoproto.moretags) = "yaml:\"pool_rate\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+}

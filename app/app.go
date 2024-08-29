@@ -111,10 +111,15 @@ import (
 	v1_1_5 "github.com/onomyprotocol/onomy/app/upgrades/v1.1.5"
 	v1_1_5_fix "github.com/onomyprotocol/onomy/app/upgrades/v1.1.5-fix"
 	"github.com/onomyprotocol/onomy/docs"
+
 	"github.com/onomyprotocol/onomy/x/dao"
 	daoclient "github.com/onomyprotocol/onomy/x/dao/client"
 	daokeeper "github.com/onomyprotocol/onomy/x/dao/keeper"
 	daotypes "github.com/onomyprotocol/onomy/x/dao/types"
+
+	"github.com/onomyprotocol/onomy/x/psm"
+	psmKeeper "github.com/onomyprotocol/onomy/x/psm/keeper"
+	psmTypes "github.com/onomyprotocol/onomy/x/psm/types"
 )
 
 const (
@@ -136,6 +141,8 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 		ibcclientclient.UpgradeProposalHandler,
 		daoclient.FundTreasuryProposalHandler,
 		daoclient.ExchangeWithTreasuryProposalProposalHandler,
+		psm.AddStableCoinProposalHandler,
+		psm.UpdatesStableCoinProposalHandler,
 		ibcproviderclient.ConsumerAdditionProposalHandler,
 		ibcproviderclient.ConsumerRemovalProposalHandler,
 		ibcproviderclient.EquivocationProposalHandler,
@@ -171,6 +178,7 @@ var (
 		transfer.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 		dao.AppModuleBasic{},
+		psm.AppModuleBasic{},
 		ibcprovider.AppModuleBasic{},
 	)
 
@@ -178,6 +186,7 @@ var (
 	maccPerms = map[string][]string{ // nolint:gochecknoglobals // cosmos-sdk application style
 		authtypes.FeeCollectorName:        nil,
 		daotypes.ModuleName:               {authtypes.Minter},
+		psmTypes.ModuleName:               {authtypes.Minter, authtypes.Burner},
 		distrtypes.ModuleName:             nil,
 		minttypes.ModuleName:              {authtypes.Minter},
 		stakingtypes.BondedPoolName:       {authtypes.Burner, authtypes.Staking},
@@ -260,6 +269,7 @@ type OnomyApp struct {
 	ScopedIBCProviderKeeper capabilitykeeper.ScopedKeeper
 
 	DaoKeeper daokeeper.Keeper
+	PSMKeeper psmKeeper.Keeper
 
 	// mm is the module manager
 	mm           *module.Manager
@@ -296,7 +306,7 @@ func New( // nolint:funlen // app new cosmos func
 		minttypes.StoreKey, distrtypes.StoreKey, slashingtypes.StoreKey,
 		govtypes.StoreKey, paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey, authzkeeper.StoreKey,
-		providertypes.StoreKey,
+		providertypes.StoreKey, psmTypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -400,6 +410,15 @@ func New( // nolint:funlen // app new cosmos func
 		&app.StakingKeeper,
 	)
 
+	app.PSMKeeper = *psmKeeper.NewKeeper(
+		appCodec,
+		keys[psmTypes.StoreKey],
+		keys[psmTypes.MemStoreKey],
+		app.GetSubspace(psmTypes.ModuleName),
+		&app.BankKeeper,
+		&app.AccountKeeper,
+	)
+
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper = *stakingKeeper.SetHooks(
@@ -450,6 +469,7 @@ func New( // nolint:funlen // app new cosmos func
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
 		AddRoute(daotypes.RouterKey, dao.NewProposalHandler(app.DaoKeeper)).
+		AddRoute(psmTypes.RouterKey, psm.NewStablecoinProposalHandler(&app.PSMKeeper)).
 		AddRoute(providertypes.RouterKey, ibcprovider.NewProviderProposalHandler(app.ProviderKeeper))
 
 	app.GovKeeper = govkeeper.NewKeeper(
@@ -489,6 +509,7 @@ func New( // nolint:funlen // app new cosmos func
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		transferModule,
 		dao.NewAppModule(appCodec, app.DaoKeeper),
+		psm.NewAppModule(appCodec, app.PSMKeeper),
 		providerModule,
 	)
 
@@ -516,6 +537,7 @@ func New( // nolint:funlen // app new cosmos func
 		vestingtypes.ModuleName,
 		feegrant.ModuleName,
 		daotypes.ModuleName,
+		psmTypes.ModuleName,
 		providertypes.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
@@ -538,6 +560,7 @@ func New( // nolint:funlen // app new cosmos func
 		vestingtypes.ModuleName,
 		feegrant.ModuleName,
 		daotypes.ModuleName,
+		psmTypes.ModuleName,
 		providertypes.ModuleName,
 	)
 
@@ -566,6 +589,7 @@ func New( // nolint:funlen // app new cosmos func
 		vestingtypes.ModuleName,
 		feegrant.ModuleName,
 		daotypes.ModuleName,
+		psmTypes.ModuleName,
 		providertypes.ModuleName,
 	)
 
@@ -594,6 +618,7 @@ func New( // nolint:funlen // app new cosmos func
 		ibc.NewAppModule(app.IBCKeeper),
 		transferModule,
 		dao.NewAppModule(appCodec, app.DaoKeeper),
+		psm.NewAppModule(appCodec, app.PSMKeeper),
 	)
 	app.sm.RegisterStoreDecoders()
 
@@ -803,6 +828,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibchost.ModuleName)
 	paramsKeeper.Subspace(daotypes.ModuleName)
+	paramsKeeper.Subspace(psmTypes.ModuleName)
 	paramsKeeper.Subspace(providertypes.ModuleName)
 
 	return paramsKeeper
