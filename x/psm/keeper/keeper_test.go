@@ -1,10 +1,7 @@
 package keeper_test
 
 import (
-	"log"
-	"os/exec"
 	"testing"
-	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/onomyprotocol/onomy/testutil/simapp"
@@ -63,21 +60,4 @@ func TestStablecoin(t *testing.T) {
 		return false
 	})
 	require.Equal(t, count, 2)
-
-	cmd := exec.Command("sh", "-c", "testchaind start")
-
-	// Thực thi lệnh và kiểm tra lỗi
-	if err := cmd.Start(); err != nil {
-		log.Fatalf("Failed to execute command: %s", err)
-	}
-
-	log.Println("Command executed successfully")
-
-	time.Sleep(time.Second * 20)
-
-	cmd = exec.Command("sh", "-c", "killall testchaind || true")
-	// Thực thi lệnh và kiểm tra lỗi
-	if err := cmd.Run(); err != nil {
-		log.Fatalf("Failed to execute commandd1: %s", err)
-	}
 }
