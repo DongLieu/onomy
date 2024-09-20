@@ -11,6 +11,7 @@ import (
 	"github.com/tendermint/starport/starport/pkg/cosmoscmd"
 	"github.com/tendermint/tendermint/libs/cli"
 
+	"github.com/cosmos/cosmos-sdk/x/crisis"
 	"github.com/onomyprotocol/onomy/app"
 )
 
@@ -29,6 +30,7 @@ func NewRootCmd() (*cobra.Command, cosmoscmd.EncodingConfig) {
 		server.RosettaCommand(encodingConfig.InterfaceRegistry, encodingConfig.Marshaler),
 	)
 
+	initRootCmd(rootCmd)
 	return rootCmd, encodingConfig
 }
 
@@ -51,4 +53,14 @@ func WrapBridgeCommands(defaultNodeHome, rootCmd string, cmds []*cobra.Command) 
 	cmd.PersistentFlags().String(cli.OutputFlag, "text", "Output format (text|json)")
 
 	return cmd
+}
+
+func initRootCmd(rootCmd *cobra.Command) {
+	rootCmd.AddCommand(
+		NewTestnetCmd(addModuleInitFlags),
+	)
+}
+
+func addModuleInitFlags(startCmd *cobra.Command) {
+	crisis.AddModuleInitFlags(startCmd)
 }
