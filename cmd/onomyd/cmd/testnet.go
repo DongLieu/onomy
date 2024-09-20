@@ -104,7 +104,6 @@ func newTestnetApp(logger log.Logger, db dbm.DB, traceStore io.Writer, appOpts s
 // Optional Changes: Changes to customize the testnet to one's liking (lower vote times, fund accounts, etc)
 func initAppForTestnet(app *app.OnomyApp, args valArgs) *app.OnomyApp {
 	//
-	fmt.Println("lllllllllllllll0")
 	// Required Changes:
 	//
 	ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{})
@@ -144,7 +143,6 @@ func initAppForTestnet(app *app.OnomyApp, args valArgs) *app.OnomyApp {
 	stakingStore := ctx.KVStore(stakingKey)
 	iterator := app.StakingKeeper.ValidatorsPowerStoreIterator(ctx)
 	for ; iterator.Valid(); iterator.Next() {
-		fmt.Println("delete store, ValidatorsPowerStoreIterator")
 		stakingStore.Delete(iterator.Key())
 	}
 	iterator.Close()
@@ -152,7 +150,6 @@ func initAppForTestnet(app *app.OnomyApp, args valArgs) *app.OnomyApp {
 	// Remove all valdiators from last validators store
 	iterator = app.StakingKeeper.LastValidatorsIterator(ctx)
 	for ; iterator.Valid(); iterator.Next() {
-		fmt.Println("delete store, LastValidatorsIterator")
 		stakingStore.Delete(iterator.Key())
 	}
 	iterator.Close()
@@ -160,7 +157,6 @@ func initAppForTestnet(app *app.OnomyApp, args valArgs) *app.OnomyApp {
 	// Remove all validators from validators store
 	iterator = stakingStore.Iterator(stakingtypes.ValidatorsKey, storetypes.PrefixEndBytes(stakingtypes.ValidatorsKey))
 	for ; iterator.Valid(); iterator.Next() {
-		fmt.Println("delete store, Remove all validators from validators store")
 		stakingStore.Delete(iterator.Key())
 	}
 	iterator.Close()
@@ -168,7 +164,6 @@ func initAppForTestnet(app *app.OnomyApp, args valArgs) *app.OnomyApp {
 	// Remove all validators from unbonding queue
 	iterator = stakingStore.Iterator(stakingtypes.UnbondingQueueKey, storetypes.PrefixEndBytes(stakingtypes.UnbondingQueueKey))
 	for ; iterator.Valid(); iterator.Next() {
-		fmt.Println("delete store, Remove all validators from unbonding queue")
 		stakingStore.Delete(iterator.Key())
 	}
 	iterator.Close()
@@ -211,7 +206,11 @@ func initAppForTestnet(app *app.OnomyApp, args valArgs) *app.OnomyApp {
 	//
 	bondDenom := app.StakingKeeper.BondDenom(ctx)
 
-	defaultCoins := sdk.NewCoins(sdk.NewInt64Coin(bondDenom, 1000000000))
+	amount, ok := sdk.NewIntFromString("225000000001000000000000")
+	if !ok {
+		amount = sdk.NewInt(1000000000000000000)
+	}
+	defaultCoins := sdk.NewCoins(sdk.NewCoin(bondDenom, amount))
 
 	// Fund local accounts
 	for _, account := range args.accountsToFund {
@@ -224,7 +223,6 @@ func initAppForTestnet(app *app.OnomyApp, args valArgs) *app.OnomyApp {
 			tmos.Exit(err.Error())
 		}
 	}
-	fmt.Println("lllllllllllllll1")
 	return app
 }
 
