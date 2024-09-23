@@ -13,6 +13,10 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	"github.com/onomyprotocol/onomy/app"
+
+	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	ibcprovidertypes "github.com/cosmos/interchain-security/x/ccv/provider/types"
 )
 
 // NewRootCmd initiates the cli for onomy chain.
@@ -25,6 +29,8 @@ func NewRootCmd() (*cobra.Command, cosmoscmd.EncodingConfig) {
 		app.ModuleBasics,
 		app.New,
 	)
+	// pull request #171 refactor: Remove ics. So we need re-register proto can read state
+	RegisterInterfacesProvider(encodingConfig.InterfaceRegistry)
 
 	rootCmd.AddCommand(
 		server.RosettaCommand(encodingConfig.InterfaceRegistry, encodingConfig.Marshaler),
@@ -63,4 +69,12 @@ func initRootCmd(rootCmd *cobra.Command) {
 
 func addModuleInitFlags(startCmd *cobra.Command) {
 	crisis.AddModuleInitFlags(startCmd)
+}
+
+// // pull request #171 refactor: Remove ics. So we need re-register proto can read state
+func RegisterInterfacesProvider(registry cdctypes.InterfaceRegistry) {
+	registry.RegisterImplementations(
+		(*govtypes.Content)(nil),
+		&ibcprovidertypes.ConsumerAdditionProposal{},
+	)
 }
