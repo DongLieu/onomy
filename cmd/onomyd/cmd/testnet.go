@@ -4,6 +4,8 @@ import (
 	// "encoding/base64"
 	"fmt"
 	"io"
+	"time"
+
 	// "path/filepath"
 	"strings"
 
@@ -21,6 +23,7 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/crypto"
+
 	// tmd25519 "github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/libs/bytes"
 	"github.com/tendermint/tendermint/libs/log"
@@ -35,6 +38,8 @@ import (
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	v115_fix "github.com/onomyprotocol/onomy/app/upgrades/v1.1.5-fix"
 	"github.com/tendermint/starport/starport/pkg/cosmoscmd"
+
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	// tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/onomyprotocol/onomy/app"
@@ -223,6 +228,17 @@ func initAppForTestnet(app *app.OnomyApp, args valArgs) *app.OnomyApp {
 			tmos.Exit(err.Error())
 		}
 	}
+	//
+	// Optional Changes:
+	//
+
+	// GOV
+	//1 minute
+	app.GovKeeper.SetVotingParams(ctx, govtypes.NewVotingParams(time.Minute))
+	if err != nil {
+		tmos.Exit(err.Error())
+	}
+
 	return app
 }
 
