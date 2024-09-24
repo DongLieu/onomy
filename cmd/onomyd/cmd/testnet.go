@@ -108,6 +108,7 @@ func newTestnetApp(logger log.Logger, db dbm.DB, traceStore io.Writer, appOpts s
 // Required Changes: Changes that, if not made, will cause the testnet to halt or panic
 // Optional Changes: Changes to customize the testnet to one's liking (lower vote times, fund accounts, etc)
 func initAppForTestnet(app *app.OnomyApp, args valArgs) *app.OnomyApp {
+	RegisterInterfacesProvider(app.InterfaceRegistry())
 	//
 	// Required Changes:
 	//
@@ -211,7 +212,7 @@ func initAppForTestnet(app *app.OnomyApp, args valArgs) *app.OnomyApp {
 	//
 	bondDenom := app.StakingKeeper.BondDenom(ctx)
 
-	amount, ok := sdk.NewIntFromString("225000000001000000000000")
+	amount, ok := sdk.NewIntFromString("171037697576520208568450937")
 	if !ok {
 		amount = sdk.NewInt(1000000000000000000)
 	}
@@ -238,6 +239,10 @@ func initAppForTestnet(app *app.OnomyApp, args valArgs) *app.OnomyApp {
 	if err != nil {
 		tmos.Exit(err.Error())
 	}
+	// set deposit 1h and
+	min_deposit := sdk.NewInt(100000000000)
+	min_deposit_coin := sdk.NewCoins(sdk.NewCoin(bondDenom, min_deposit))
+	app.GovKeeper.SetDepositParams(ctx, govtypes.NewDepositParams(sdk.NewCoins(min_deposit_coin...), time.Hour))
 
 	return app
 }
