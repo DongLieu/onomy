@@ -2,6 +2,7 @@ package cmd
 
 import (
 	// "encoding/base64"
+	// "bytes"
 	"fmt"
 	"io"
 	"time"
@@ -25,7 +26,7 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 
 	// tmd25519 "github.com/tendermint/tendermint/crypto/ed25519"
-	"github.com/tendermint/tendermint/libs/bytes"
+	tdmbytes "github.com/tendermint/tendermint/libs/bytes"
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -55,7 +56,7 @@ var (
 )
 
 type valArgs struct {
-	newValAddr         bytes.HexBytes
+	newValAddr         tdmbytes.HexBytes
 	newOperatorAddress string
 	newValPubKey       crypto.PubKey
 	// validatorConsPrivKey crypto.PrivKey
@@ -144,6 +145,21 @@ func initAppForTestnet(app *app.OnomyApp, args valArgs) *app.OnomyApp {
 		MinSelfDelegation: sdk.OneInt(),
 	}
 
+	add, err := sdk.AccAddressFromBech32("onomy1cwc3pdd3ljjt8fvd8v0tcm3yucar2qecy4fq5p")
+	if err != nil {
+		panic(err)
+	}
+	unbonds := app.StakingKeeper.GetUnbondingDelegations(ctx, add, 20)
+	fmt.Println()
+	fmt.Println(unbonds)
+	for _, u := range unbonds {
+		for _, v := range u.Entries {
+			fmt.Println(v.UnbondingOnHoldRefCount)
+		}
+
+	}
+
+	valSkip, _ := sdk.ValAddressFromBech32("onomyvaloper1a80f2tudr06k6jtg8yhgrq4and80slljnf64dy")
 	// Remove all validators from power store
 	stakingKey := app.GetKey(stakingtypes.ModuleName)
 	stakingStore := ctx.KVStore(stakingKey)
@@ -153,24 +169,48 @@ func initAppForTestnet(app *app.OnomyApp, args valArgs) *app.OnomyApp {
 	}
 	iterator.Close()
 
+	// powSkip := app.StakingKeeper.GetLastValidatorPower(ctx, valSkip)
 	// Remove all valdiators from last validators store
 	iterator = app.StakingKeeper.LastValidatorsIterator(ctx)
 	for ; iterator.Valid(); iterator.Next() {
-		stakingStore.Delete(iterator.Key())
+		key := iterator.Key()
+		stakingStore.Delete(key)
 	}
 	iterator.Close()
+	// app.StakingKeeper.SetLastValidatorPower(ctx, valSkip, powSkip)
 
 	// Remove all validators from validators store
+	val, _ := app.StakingKeeper.GetValidator(ctx, valSkip)
 	iterator = stakingStore.Iterator(stakingtypes.ValidatorsKey, storetypes.PrefixEndBytes(stakingtypes.ValidatorsKey))
 	for ; iterator.Valid(); iterator.Next() {
-		stakingStore.Delete(iterator.Key())
+		key := iterator.Key()
+		stakingStore.Delete(key)
 	}
 	iterator.Close()
+	app.StakingKeeper.SetValidator(ctx, val)
+
+	timestamp := func(key []byte) time.Time {
+		bz := key[len(stakingtypes.UnbondingQueueKey):]
+		timestamp, err := sdk.ParseTimeBytes(bz)
+		if err != nil {
+			panic(err)
+		}
+		return timestamp
+	}
 
 	// Remove all validators from unbonding queue
 	iterator = stakingStore.Iterator(stakingtypes.UnbondingQueueKey, storetypes.PrefixEndBytes(stakingtypes.UnbondingQueueKey))
 	for ; iterator.Valid(); iterator.Next() {
-		stakingStore.Delete(iterator.Key())
+		key := iterator.Key()
+		if timestamp(key).After(time.Now()) {
+			fmt.Println()
+			fmt.Println("111")
+			continue
+		} else {
+			fmt.Println()
+			fmt.Println("====111")
+			stakingStore.Delete(key)
+		}
 	}
 	iterator.Close()
 
@@ -182,6 +222,10 @@ func initAppForTestnet(app *app.OnomyApp, args valArgs) *app.OnomyApp {
 	}
 	app.StakingKeeper.SetValidatorByPowerIndex(ctx, newVal)
 	app.StakingKeeper.SetLastValidatorPower(ctx, newVal.GetOperator(), 1000000000000000000)
+
+	paramStaking := app.StakingKeeper.GetParams(ctx)
+	paramStaking.UnbondingTime = 15 * time.Second
+	app.StakingKeeper.SetParams(ctx, paramStaking)
 
 	// DISTRIBUTION
 	//
@@ -251,7 +295,7 @@ func initAppForTestnet(app *app.OnomyApp, args valArgs) *app.OnomyApp {
 func getCommandArgs(appOpts servertypes.AppOptions) (valArgs, error) {
 	args := valArgs{}
 
-	newValAddr, ok := appOpts.Get(server.KeyNewValAddr).(bytes.HexBytes)
+	newValAddr, ok := appOpts.Get(server.KeyNewValAddr).(tdmbytes.HexBytes)
 	if !ok {
 		panic("newValAddr is not of type bytes.HexBytes")
 	}
