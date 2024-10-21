@@ -40,18 +40,19 @@ func (app *OnomyApp) ExportAppStateAndValidators(
 		&ibcprovidertypes.ConsumerAdditionProposal{},
 	)
 
+	// {max_bytes:22020096 max_gas:-1  max_age_num_blocks:100000 max_age_duration:<seconds:172800 > max_bytes:1048576  pub_key_types:"ed25519"   }
 	params := cmtproto.ConsensusParams{
 		Block: &cmtproto.BlockParams{
-			MaxBytes: 2048,
-			MaxGas:   5000000,
+			MaxBytes: 22020096,
+			MaxGas:   -1,
 		},
 		Evidence: &cmtproto.EvidenceParams{
-			MaxAgeNumBlocks: 20,
-			MaxAgeDuration:  time.Second * 5,
-			MaxBytes:        4096,
+			MaxAgeNumBlocks: 100000,
+			MaxAgeDuration:  time.Second * 172800,
+			MaxBytes:        1048576,
 		},
 		Validator: &cmtproto.ValidatorParams{
-			PubKeyTypes: []string{"tendermint/PubKeyEd25519", "tendermint/PubKeySecp256k1"},
+			PubKeyTypes: []string{"ed25519"},
 		},
 	}
 
