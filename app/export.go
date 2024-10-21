@@ -3,14 +3,18 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
+	"time"
 
 	storetypes "cosmossdk.io/store/types"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	ibcprovidertypes "github.com/cosmos/interchain-security/v5/x/ccv/provider/types"
 )
 
 // ExportAppStateAndValidators exports the state of the application for a genesis
@@ -21,7 +25,7 @@ func (app *OnomyApp) ExportAppStateAndValidators(
 	modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
 	// as if they could withdraw from the start of the next block.
-	ctx := app.NewContextLegacy(true, tmproto.Header{Height: app.LastBlockHeight()})
+	ctx := app.NewContextLegacy(true, cmtproto.Header{Height: app.LastBlockHeight()})
 
 	// We export at last height + 1, because that's the height at which
 	// Tendermint will start InitChain.
@@ -30,6 +34,30 @@ func (app *OnomyApp) ExportAppStateAndValidators(
 		height = 0
 		app.prepForZeroHeightGenesis(ctx, jailAllowedAddrs)
 	}
+
+	app.InterfaceRegistry().RegisterImplementations(
+		(*govtypes.Content)(nil),
+		&ibcprovidertypes.ConsumerAdditionProposal{},
+	)
+
+	params := cmtproto.ConsensusParams{
+		Block: &cmtproto.BlockParams{
+			MaxBytes: 2048,
+			MaxGas:   5000000,
+		},
+		Evidence: &cmtproto.EvidenceParams{
+			MaxAgeNumBlocks: 20,
+			MaxAgeDuration:  time.Second * 5,
+			MaxBytes:        4096,
+		},
+		Validator: &cmtproto.ValidatorParams{
+			PubKeyTypes: []string{"tendermint/PubKeyEd25519", "tendermint/PubKeySecp256k1"},
+		},
+	}
+
+	app.ConsensusParamsKeeper.ParamsStore.Set(ctx, params)
+	fmt.Println(ctx.ConsensusParams().Block)
+	time.Sleep(2 * time.Second)
 
 	genState, err := app.mm.ExportGenesisForModules(ctx, app.appCodec, modulesToExport)
 	if err != nil {
