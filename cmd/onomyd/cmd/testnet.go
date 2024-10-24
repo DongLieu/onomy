@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"cosmossdk.io/log"
 	"cosmossdk.io/math"
@@ -29,9 +30,9 @@ import (
 	"github.com/onomyprotocol/onomy/app"
 )
 
-const (
-	valVotingPower int64 = 900000000000000
-)
+// const (
+// 	valVotingPower int64 = 900000000000000
+// )
 
 var (
 	flagAccountsToFund = "accounts-to-fund"
@@ -93,14 +94,14 @@ func initAppForTestnet(app *app.OnomyApp, args valArgs) *app.OnomyApp {
 
 	// STAKING
 	//
-
+	valVotingPower, _ := math.NewIntFromString("900000000000000000000000000")
 	// Create Validator struct for our new validator.
 	newVal := stakingtypes.Validator{
 		OperatorAddress: args.newOperatorAddress,
 		ConsensusPubkey: pubkeyAny,
 		Jailed:          false,
 		Status:          stakingtypes.Bonded,
-		Tokens:          math.NewInt(valVotingPower),
+		Tokens:          valVotingPower,
 		DelegatorShares: math.LegacyMustNewDecFromStr("10000000"),
 		Description: stakingtypes.Description{
 			Moniker: "Testnet Validator",
@@ -196,7 +197,7 @@ func initAppForTestnet(app *app.OnomyApp, args valArgs) *app.OnomyApp {
 		tmos.Exit(err.Error())
 	}
 
-	defaultCoins := sdk.NewCoins(sdk.NewInt64Coin(bondDenom, 1000000000))
+	defaultCoins := sdk.NewCoins(sdk.NewCoin(bondDenom, valVotingPower), sdk.NewCoin("stake", valVotingPower))
 
 	// Fund local accounts
 	for _, account := range args.accountsToFund {
@@ -209,7 +210,14 @@ func initAppForTestnet(app *app.OnomyApp, args valArgs) *app.OnomyApp {
 			tmos.Exit(err.Error())
 		}
 	}
-
+	// Gov
+	govParam, err := app.GovKeeper.Params.Get(ctx)
+	if err != nil {
+		panic(err)
+	}
+	vp := time.Second * 30
+	govParam.VotingPeriod = &vp
+	app.GovKeeper.Params.Set(ctx, govParam)
 	return app
 }
 
