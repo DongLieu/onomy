@@ -20,7 +20,7 @@ import (
 // Name is migration name. Migrate denom "anom" to "ono".
 const Name = "v2.2.0"
 
-// UpgradeHandler is an x/upgrade handler.
+// UpgradeHandler is an x/upgrade handler..
 func CreateUpgradeHandler(
 	mm *module.Manager,
 	configurator module.Configurator,
