@@ -5,7 +5,7 @@ sleep 7
 
 onomyd tx oracle set-price nomUSD 1 --home=$HOME/.onomyd/validator1  --from validator1 --keyring-backend test --fees 20stake --chain-id testing-1 -y
 onomyd tx oracle set-price fet 1.3 --home=$HOME/.onomyd/validator2  --from validator2 --keyring-backend test --fees 20stake --chain-id testing-1 -y
-onomyd tx oracle set-price atom 8.13 --home=$HOME/.onomyd/validator3  --from validator3 --keyring-backend test --fees 20stake --chain-id testing-1 -y
+onomyd tx oracle set-price ATOM 8.13 --home=$HOME/.onomyd/validator3  --from validator3 --keyring-backend test --fees 20stake --chain-id testing-1 -y
 
 # submit proposal add usdt
 sleep 7

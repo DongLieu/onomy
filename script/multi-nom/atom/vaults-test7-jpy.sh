@@ -6,7 +6,7 @@ sleep 7
 
 onomyd q bank balances $(onomyd keys show test2 -a --keyring-backend test --home $HOME/.onomyd/validator1)
 
-onomyd tx oracle set-price atom 4 --home=$HOME/.onomyd/validator1  --from validator1 --keyring-backend test --fees 20stake --chain-id testing-1 -y
+onomyd tx oracle set-price ATOM 4 --home=$HOME/.onomyd/validator1  --from validator1 --keyring-backend test --fees 20stake --chain-id testing-1 -y
 
 echo "wating long time, query auction ratecurrent = 1.1...liquidate"
 # onomyd tx aution 
