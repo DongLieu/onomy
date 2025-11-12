@@ -14,6 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/spf13/cobra"
 
+	"github.com/onomyprotocol/onomy/x/gnark/client/cli"
 	"github.com/onomyprotocol/onomy/x/gnark/keeper"
 	"github.com/onomyprotocol/onomy/x/gnark/types"
 )
@@ -62,7 +63,7 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *r
 }
 
 // GetTxCmd returns nil since the module relies on grpc service.
-func (AppModuleBasic) GetTxCmd() *cobra.Command { return nil }
+func (AppModuleBasic) GetTxCmd() *cobra.Command { return cli.TxCmd() }
 
 // GetQueryCmd returns nil as grpc gateway is used for queries.
 func (AppModuleBasic) GetQueryCmd() *cobra.Command { return nil }
