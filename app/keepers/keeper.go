@@ -55,6 +55,9 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+
+	gnarkkeeper "github.com/onomyprotocol/onomy/x/gnark/keeper"
+	gnarktypes "github.com/onomyprotocol/onomy/x/gnark/types"
 )
 
 type AppKeepers struct {
@@ -89,6 +92,7 @@ type AppKeepers struct {
 
 	// Modules.
 	TransferModule transfer.AppModule
+	GnarkKeeper    gnarkkeeper.Keeper
 }
 
 func NewAppKeeper(
@@ -149,6 +153,11 @@ func NewAppKeeper(
 	// Applications that wish to enforce statically created ScopedKeepers should call `Seal` after creating
 	// their scoped modules in `NewApp` with `ScopeToModule`.
 	appKeepers.CapabilityKeeper.Seal()
+
+	appKeepers.GnarkKeeper = gnarkkeeper.NewKeeper(
+		appCodec,
+		appKeepers.keys[gnarktypes.StoreKey],
+	)
 
 	appKeepers.CrisisKeeper = crisiskeeper.NewKeeper(
 		appCodec,

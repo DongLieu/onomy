@@ -1,0 +1,18 @@
+syntax = "proto3";
+package onomyprotocol.gnark.v1;
+
+import "gogoproto/gogo.proto";
+import "onomyprotocol/gnark/v1/gnark.proto";
+import "onomyprotocol/gnark/v1/params.proto";
+
+option go_package = "github.com/onomyprotocol/onomy/x/gnark/types";
+option (gogoproto.equal_all) = true;
+
+// GenesisState defines the gnark module genesis state.
+message GenesisState {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  Params params = 1 [(gogoproto.nullable) = false];
+  repeated Circuit circuits = 2 [(gogoproto.nullable) = false];
+}

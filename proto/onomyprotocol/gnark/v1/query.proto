@@ -1,0 +1,38 @@
+syntax = "proto3";
+package onomyprotocol.gnark.v1;
+
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "google/api/annotations.proto";
+import "gogoproto/gogo.proto";
+import "onomyprotocol/gnark/v1/gnark.proto";
+
+option go_package = "github.com/onomyprotocol/onomy/x/gnark/types";
+
+// Query service exposes gnark state via gRPC.
+service Query {
+  // Circuit returns the stored circuit for a given identifier.
+  rpc Circuit(QueryCircuitRequest) returns (QueryCircuitResponse) {
+    option (google.api.http).get = "/onomy/gnark/v1/circuits/{circuit_id}";
+  }
+  // Circuits lists all circuits with pagination support.
+  rpc Circuits(QueryCircuitsRequest) returns (QueryCircuitsResponse) {
+    option (google.api.http).get = "/onomy/gnark/v1/circuits";
+  }
+}
+
+message QueryCircuitRequest {
+  string circuit_id = 1;
+}
+
+message QueryCircuitResponse {
+  Circuit circuit = 1;
+}
+
+message QueryCircuitsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryCircuitsResponse {
+  repeated Circuit circuits = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}

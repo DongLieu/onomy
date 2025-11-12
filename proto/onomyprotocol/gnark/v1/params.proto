@@ -1,0 +1,13 @@
+syntax = "proto3";
+package onomyprotocol.gnark.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/onomyprotocol/onomy/x/gnark/types";
+option (gogoproto.equal_all) = true;
+
+// Params defines the gnark module parameters.
+message Params {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+}

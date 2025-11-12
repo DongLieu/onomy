@@ -1,0 +1,48 @@
+syntax = "proto3";
+package onomyprotocol.gnark.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+option go_package = "github.com/onomyprotocol/onomy/x/gnark/types";
+
+// Msg defines the gnark Msg service.
+service Msg {
+  // CreateCircuit uploads a verifying key and circuit definition onto the chain.
+  rpc CreateCircuit(MsgCreateCircuit) returns (MsgCreateCircuitResponse) {
+    option (google.api.http).post = "/onomy/gnark/v1/circuits";
+    option (google.api.http).body = "*";
+  }
+  // VerifyProof checks a proof against a stored circuit and verifying key.
+  rpc VerifyProof(MsgVerifyProof) returns (MsgVerifyProofResponse) {
+    option (google.api.http).post = "/onomy/gnark/v1/circuits/{circuit_id}:verify";
+    option (google.api.http).body = "*";
+  }
+}
+
+message MsgCreateCircuit {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string creator = 1;
+  string circuit_id = 2;
+  string curve_id = 3;
+  bytes verifying_key = 4;
+  bytes circuit = 5;
+}
+
+message MsgCreateCircuitResponse {}
+
+message MsgVerifyProof {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string creator = 1;
+  string circuit_id = 2;
+  bytes proof = 3;
+  bytes public_witness = 4;
+}
+
+message MsgVerifyProofResponse {
+  bool valid = 1;
+}

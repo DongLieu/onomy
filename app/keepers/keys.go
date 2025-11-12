@@ -19,6 +19,8 @@ import (
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+
+	gnarktypes "github.com/onomyprotocol/onomy/x/gnark/types"
 )
 
 func (appKeepers *AppKeepers) GenerateKeys() {
@@ -42,6 +44,7 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		feegrant.StoreKey,
 		authzkeeper.StoreKey,
 		consensusparamtypes.StoreKey,
+		gnarktypes.StoreKey,
 	)
 
 	// Define transient store keys.

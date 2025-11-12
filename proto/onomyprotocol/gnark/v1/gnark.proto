@@ -1,0 +1,26 @@
+syntax = "proto3";
+package onomyprotocol.gnark.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/onomyprotocol/onomy/x/gnark/types";
+option (gogoproto.equal_all) = true;
+
+// Circuit captures the persisted proving artifacts for a gnark circuit.
+message Circuit {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  // unique identifier used to reference this circuit.
+  string id = 1;
+  // bech32 address that created the circuit entry.
+  string creator = 2;
+  // textual form of the target curve (e.g. "BN254").
+  string curve_id = 3;
+  // serialized groth16 verifying key bytes.
+  bytes verifying_key = 4;
+  // serialized constraint system (.r1cs) bytes.
+  bytes circuit = 5;
+  // block height when the circuit was stored, useful for auditing.
+  uint64 height = 6;
+}

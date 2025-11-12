@@ -45,6 +45,9 @@ import (
 	ibc "github.com/cosmos/ibc-go/v8/modules/core"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+
+	gnarkmodule "github.com/onomyprotocol/onomy/x/gnark"
+	gnarktypes "github.com/onomyprotocol/onomy/x/gnark/types"
 )
 
 var (
@@ -93,6 +96,7 @@ func appModules(
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName)),
 		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, app, txConfig),
 		app.TransferModule,
+		gnarkmodule.NewAppModule(app.GnarkKeeper),
 		// and.
 	}
 }
@@ -133,6 +137,7 @@ func orderBeginBlockers() []string {
 		paramstypes.ModuleName,
 		vestingtypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		gnarktypes.ModuleName,
 	}
 }
 
@@ -157,6 +162,7 @@ func orderEndBlockers() []string {
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		gnarktypes.ModuleName,
 	}
 }
 
@@ -181,6 +187,7 @@ func orderInitBlockers() []string {
 		vestingtypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		crisistypes.ModuleName,
+		gnarktypes.ModuleName,
 	}
 }
 

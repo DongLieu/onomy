@@ -30,6 +30,7 @@ import (
 	ibcprovidertypes "github.com/cosmos/interchain-security/v5/x/ccv/provider/types"
 
 	daotypes "github.com/onomyprotocol/onomy/x/dao/types"
+	gnarktypes "github.com/onomyprotocol/onomy/x/gnark/types"
 )
 
 // NewRootCmd initiates the cli for onomy chain.
@@ -175,4 +176,5 @@ func RegisterInterfacesUsed(registry cdctypes.InterfaceRegistry) {
 		&ibcprovidertypes.ConsumerAdditionProposal{},
 	)
 	daotypes.RegisterInterfaces(registry)
+	gnarktypes.RegisterInterfaces(registry)
 }
